@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
 import { ReactComponent as DayCloudyIcon } from "./images/day-cloudy.svg";
 import { ReactComponent as RainIcon } from "./images/rain.svg";
@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 
 //授權碼
 const AUTHORIZATTION_KEY = "CWB-1FE79B72-C9C2-4FDD-BD31-F7C60F0066A2";
-const LOCATION_NAME = "嘉義";
+const LOCATION_NAME = "臺北";
 //深淺色主題css
 const theme = {
   light: {
@@ -40,7 +40,10 @@ function App() {
     rainPossibility: 48.3,
     observationTime: "2020-12-12 22:10:00",
   });
-  const handleClick = () => {
+  useEffect(() => {
+    fetchWeatherData();
+  }, []);
+  const fetchWeatherData = () => {
     fetch(
       `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATTION_KEY}&locationName=${LOCATION_NAME}`
     )
@@ -96,7 +99,7 @@ function App() {
               hour: "numeric",
               minute: "numeric",
             }).format(dayjs(currentWeather.observationTime))}
-            <RefreshIcon onClick={handleClick} />
+            <RefreshIcon onClick={fetchWeatherData} />
           </Refresh>
         </WeatherCard>
       </Container>
