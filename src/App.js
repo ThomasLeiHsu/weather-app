@@ -7,6 +7,9 @@ import { ReactComponent as RefreshIcon } from "./images/refresh.svg";
 import { ThemeProvider } from "@emotion/react";
 import dayjs from "dayjs";
 
+//授權碼
+const AUTHORIZATTION_KEY = "CWB-1FE79B72-C9C2-4FDD-BD31-F7C60F0066A2";
+const LOCATION_NAME = "嘉義";
 //深淺色主題css
 const theme = {
   light: {
@@ -37,6 +40,35 @@ function App() {
     rainPossibility: 48.3,
     observationTime: "2020-12-12 22:10:00",
   });
+  const handleClick = () => {
+    fetch(
+      `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATTION_KEY}&locationName=${LOCATION_NAME}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        //抓到資料
+        const locationData = data.records.location[0];
+        //過濾資料 用reduce $ include
+        const weatherElements = locationData.weatherElement.reduce(
+          (neededElement, item) => {
+            if (["WDSD", "TEMP"].includes(item.elementName)) {
+              neededElement[item.elementName] = item.elementValue;
+            }
+            return neededElement;
+          },
+          {}
+        );
+        // update data with setstate
+        setCurrentWeather({
+          locationName: locationData.locationName,
+          description: "多雲時晴",
+          windspeed: weatherElements.WDSD,
+          tempreature: weatherElements.TEMP,
+          rainPossibility: 48.3,
+          observationTime: locationData.time.obsTime,
+        });
+      });
+  };
   return (
     <ThemeProvider theme={theme[currentTheme]}>
       <Container>
@@ -64,7 +96,7 @@ function App() {
               hour: "numeric",
               minute: "numeric",
             }).format(dayjs(currentWeather.observationTime))}
-            <RefreshIcon />
+            <RefreshIcon onClick={handleClick} />
           </Refresh>
         </WeatherCard>
       </Container>
