@@ -32,6 +32,59 @@ const theme = {
     textColor: "#cccccc",
   },
 };
+//funciotn s
+const fetchWeatherData = () => {
+  return fetch(
+    `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATTION_KEY}&locationName=${LOCATION_NAME}`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      //抓到資料
+      const locationData = data.records.location[0];
+      //過濾資料 用reduce & include
+      const weatherElements = locationData.weatherElement.reduce(
+        (neededElement, item) => {
+          if (["WDSD", "TEMP"].includes(item.elementName)) {
+            neededElement[item.elementName] = item.elementValue;
+          }
+          return neededElement;
+        },
+        {}
+      );
+      // return data
+      return {
+        locationName: locationData.locationName,
+        windspeed: weatherElements.WDSD,
+        tempreature: weatherElements.TEMP,
+        observationTime: locationData.time.obsTime,
+        isLoding: false,
+      };
+    });
+};
+const fetchWeatherForcast = () => {
+  return fetch(
+    `https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATTION_KEY}&locationName${LOCATION_NAME_FORCAST}`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      const locationData = data.records.location[0];
+      const weatherElements = locationData.weatherElement.reduce(
+        (neededElements, item) => {
+          if (["Wx", "PoP", "CI"].includes(item.elementName)) {
+            neededElements[item.elementName] = item.time[0].parameter;
+          }
+          return neededElements;
+        },
+        {}
+      );
+      return {
+        description: weatherElements.Wx.parameterName,
+        weatherCode: weatherElements.Wx.parameterValue,
+        rainPossibility: weatherElements.PoP.parameterName,
+        comfortability: weatherElements.CI.parameterName,
+      };
+    });
+};
 function App() {
   const [currentTheme, setCurrentTheme] = useState("light");
   const [weatherElement, setWeatherElement] = useState({
@@ -58,68 +111,24 @@ function App() {
   } = weatherElement;
   //useEffect
   useEffect(() => {
-    fetchWeatherData();
-    fetchWeatherForcast();
+    const fetchData = async () => {
+      setWeatherElement((prevState) => ({
+        ...prevState,
+        isLoding: true,
+      }));
+      const [currentWeather, weatherForcast] = await Promise.all([
+        fetchWeatherData(),
+        fetchWeatherForcast(),
+      ]);
+      setWeatherElement({
+        ...currentWeather,
+        ...weatherForcast,
+        isLoding: false,
+      });
+    };
+    fetchData();
   }, []);
-  //funciotn s
-  const fetchWeatherData = () => {
-    setWeatherElement((prevstate) => ({
-      ...prevstate,
-      isLoding: true,
-    }));
-    fetch(
-      `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATTION_KEY}&locationName=${LOCATION_NAME}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        //抓到資料
-        const locationData = data.records.location[0];
-        //過濾資料 用reduce $ include
-        const weatherElements = locationData.weatherElement.reduce(
-          (neededElement, item) => {
-            if (["WDSD", "TEMP"].includes(item.elementName)) {
-              neededElement[item.elementName] = item.elementValue;
-            }
-            return neededElement;
-          },
-          {}
-        );
-        // update data with setstate
-        setWeatherElement((prevstate) => ({
-          ...prevstate,
-          locationName: locationData.locationName,
-          windspeed: weatherElements.WDSD,
-          tempreature: weatherElements.TEMP,
-          observationTime: locationData.time.obsTime,
-          isLoding: false,
-        }));
-      });
-  };
-  const fetchWeatherForcast = () => {
-    fetch(
-      `https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATTION_KEY}&locationName${LOCATION_NAME_FORCAST}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        const locationData = data.records.location[0];
-        const weatherElements = locationData.weatherElement.reduce(
-          (neededElements, item) => {
-            if (["Wx", "PoP", "CI"].includes(item.elementName)) {
-              neededElements[item.elementName] = item.time[0].parameter;
-            }
-            return neededElements;
-          },
-          {}
-        );
-        setWeatherElement((prevstate) => ({
-          ...prevstate,
-          description: weatherElements.Wx.parameterName,
-          weatherCode: weatherElements.Wx.parameterValue,
-          rainPossibility: weatherElements.PoP.parameterName,
-          comfortability: weatherElements.CI.parameterName,
-        }));
-      });
-  };
+
   return (
     <ThemeProvider theme={theme[currentTheme]}>
       <Container>
