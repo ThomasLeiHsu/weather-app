@@ -4,6 +4,7 @@ import { ReactComponent as DayCloudyIcon } from "./images/day-cloudy.svg";
 import { ReactComponent as RainIcon } from "./images/rain.svg";
 import { ReactComponent as AirFlowIcon } from "./images/airFlow.svg";
 import { ReactComponent as RefreshIcon } from "./images/refresh.svg";
+import { ReactComponent as LoadingIcon } from "./images/loading.svg";
 import { ThemeProvider } from "@emotion/react";
 import dayjs from "dayjs";
 
@@ -39,11 +40,26 @@ function App() {
     tempreature: 22.9,
     rainPossibility: 48.3,
     observationTime: "2020-12-12 22:10:00",
+    isLoding: true,
   });
+  //解構賦值
+  const {
+    locationName,
+    description,
+    windspeed,
+    tempreature,
+    rainPossibility,
+    observationTime,
+    isLoding,
+  } = currentWeather;
   useEffect(() => {
     fetchWeatherData();
   }, []);
   const fetchWeatherData = () => {
+    setCurrentWeather((prevstate) => ({
+      ...prevstate,
+      isLoding: true,
+    }));
     fetch(
       `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATTION_KEY}&locationName=${LOCATION_NAME}`
     )
@@ -69,6 +85,7 @@ function App() {
           tempreature: weatherElements.TEMP,
           rainPossibility: 48.3,
           observationTime: locationData.time.obsTime,
+          isLoding: false,
         });
       });
   };
@@ -76,30 +93,30 @@ function App() {
     <ThemeProvider theme={theme[currentTheme]}>
       <Container>
         <WeatherCard>
-          <Location>{currentWeather.locationName}</Location>
-          <Description>{currentWeather.description}</Description>
+          <Location>{locationName}</Location>
+          <Description>{description}</Description>
           <CurrentWeather>
             <Tempreature>
-              {Math.round(currentWeather.tempreature)}
+              {Math.round(tempreature)}
               <Celsius>°C</Celsius>
             </Tempreature>
             <DayCloudy />
           </CurrentWeather>
           <AirFlow>
             <AirFlowIcon />
-            {currentWeather.windspeed} m/h
+            {windspeed} m/h
           </AirFlow>
           <Rain>
             <RainIcon />
-            {currentWeather.rainPossibility}%
+            {rainPossibility}%
           </Rain>
-          <Refresh>
+          <Refresh onClick={fetchWeatherData} isLoding={isLoding}>
             最後觀測時間 ：
             {new Intl.DateTimeFormat("zh-Tw", {
               hour: "numeric",
               minute: "numeric",
-            }).format(dayjs(currentWeather.observationTime))}
-            <RefreshIcon onClick={fetchWeatherData} />
+            }).format(dayjs(observationTime))}
+            {isLoding ? <LoadingIcon /> : <RefreshIcon />}
           </Refresh>
         </WeatherCard>
       </Container>
@@ -188,11 +205,21 @@ const Refresh = styled.div`
   display: inline-flex;
   align-items: flex-end;
   color: ${({ theme }) => theme.textColor};
+  @keyframes rotate {
+    from {
+      transform: rotate(360deg);
+    }
+    to {
+      transform: rotate(0deg);
+    }
+  }
   svg {
     width: 15px;
     height: 15px;
     margin-left: 10px;
     cursor: pointer;
+    animation: rotate infinite 1.5s linear;
+    animation-duration: ${({ isLoding }) => (isLoding ? "1.5s" : "0s")};
   }
 `;
 //修改conponent的css
