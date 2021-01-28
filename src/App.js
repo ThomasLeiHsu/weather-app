@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 //授權碼
 const AUTHORIZATTION_KEY = "CWB-1FE79B72-C9C2-4FDD-BD31-F7C60F0066A2";
 const LOCATION_NAME = "臺北";
+const LOCATION_NAME_FORCAST = "臺北市";
 //深淺色主題css
 const theme = {
   light: {
@@ -33,13 +34,15 @@ const theme = {
 };
 function App() {
   const [currentTheme, setCurrentTheme] = useState("light");
-  const [currentWeather, setCurrentWeather] = useState({
-    locationName: "台北市",
-    description: "多雲時晴",
-    windspeed: 1.1,
-    tempreature: 22.9,
-    rainPossibility: 48.3,
-    observationTime: "2020-12-12 22:10:00",
+  const [weatherElement, setWeatherElement] = useState({
+    locationName: "",
+    description: "",
+    windspeed: 0,
+    tempreature: 0,
+    rainPossibility: 0,
+    observationTime: new Date(),
+    weatherCode: 0,
+    comfortability: "",
     isLoding: true,
   });
   //解構賦值
@@ -50,13 +53,17 @@ function App() {
     tempreature,
     rainPossibility,
     observationTime,
+    comfortability,
     isLoding,
-  } = currentWeather;
+  } = weatherElement;
+  //useEffect
   useEffect(() => {
     fetchWeatherData();
+    fetchWeatherForcast();
   }, []);
+  //funciotn s
   const fetchWeatherData = () => {
-    setCurrentWeather((prevstate) => ({
+    setWeatherElement((prevstate) => ({
       ...prevstate,
       isLoding: true,
     }));
@@ -78,15 +85,39 @@ function App() {
           {}
         );
         // update data with setstate
-        setCurrentWeather({
+        setWeatherElement((prevstate) => ({
+          ...prevstate,
           locationName: locationData.locationName,
-          description: "多雲時晴",
           windspeed: weatherElements.WDSD,
           tempreature: weatherElements.TEMP,
-          rainPossibility: 48.3,
           observationTime: locationData.time.obsTime,
           isLoding: false,
-        });
+        }));
+      });
+  };
+  const fetchWeatherForcast = () => {
+    fetch(
+      `https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATTION_KEY}&locationName${LOCATION_NAME_FORCAST}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        const locationData = data.records.location[0];
+        const weatherElements = locationData.weatherElement.reduce(
+          (neededElements, item) => {
+            if (["Wx", "PoP", "CI"].includes(item.elementName)) {
+              neededElements[item.elementName] = item.time[0].parameter;
+            }
+            return neededElements;
+          },
+          {}
+        );
+        setWeatherElement((prevstate) => ({
+          ...prevstate,
+          description: weatherElements.Wx.parameterName,
+          weatherCode: weatherElements.Wx.parameterValue,
+          rainPossibility: weatherElements.PoP.parameterName,
+          comfortability: weatherElements.CI.parameterName,
+        }));
       });
   };
   return (
@@ -94,7 +125,9 @@ function App() {
       <Container>
         <WeatherCard>
           <Location>{locationName}</Location>
-          <Description>{description}</Description>
+          <Description>
+            {description} {comfortability}
+          </Description>
           <CurrentWeather>
             <Tempreature>
               {Math.round(tempreature)}
@@ -110,7 +143,13 @@ function App() {
             <RainIcon />
             {rainPossibility}%
           </Rain>
-          <Refresh onClick={fetchWeatherData} isLoding={isLoding}>
+          <Refresh
+            onClick={() => {
+              fetchWeatherData();
+              fetchWeatherForcast();
+            }}
+            isLoding={isLoding}
+          >
             最後觀測時間 ：
             {new Intl.DateTimeFormat("zh-Tw", {
               hour: "numeric",
