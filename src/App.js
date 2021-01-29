@@ -6,6 +6,7 @@ import { ReactComponent as AirFlowIcon } from "./images/airFlow.svg";
 import { ReactComponent as RefreshIcon } from "./images/refresh.svg";
 import { ReactComponent as LoadingIcon } from "./images/loading.svg";
 import { ThemeProvider } from "@emotion/react";
+import WeatherIcon from "./conponents/WeatherIcon";
 import dayjs from "dayjs";
 
 //授權碼
@@ -142,7 +143,7 @@ function App() {
               {Math.round(tempreature)}
               <Celsius>°C</Celsius>
             </Tempreature>
-            <DayCloudy />
+            <WeatherIcon />
           </CurrentWeather>
           <AirFlow>
             <AirFlowIcon />
