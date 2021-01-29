@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import styled from "@emotion/styled";
 import WeatherCard from "./views/WeatherCard";
+import WeatherSetting from "./views/WeatherSetting";
 import { ThemeProvider } from "@emotion/react";
 import { getMoment } from "./utils/helper";
 import useWeatherAPI from "./hooks/useWeatherAPI";
@@ -45,14 +46,26 @@ function App() {
     //根據moment決定主題色
     setCurrentTheme(moment === "day" ? "light" : "dark");
   }, [moment]);
+  //判斷出現哪個頁面
+  const [currentPage, setCurrentPage] = useState("WeatherCard");
+  //切換頁面
+  const handleCurrentPageChange = (currentPage) => {
+    setCurrentPage(currentPage);
+  };
   return (
     <ThemeProvider theme={theme[currentTheme]}>
       <Container>
-        <WeatherCard
-          moment={moment}
-          fetchData={fetchData}
-          weatherElement={weatherElement}
-        ></WeatherCard>
+        {currentPage === "WeatherCard" && (
+          <WeatherCard
+            moment={moment}
+            fetchData={fetchData}
+            weatherElement={weatherElement}
+            handleCurrentPageChange={handleCurrentPageChange}
+          ></WeatherCard>
+        )}
+        {currentPage === "WeatherSetting" && (
+          <WeatherSetting handleCurrentPageChange={handleCurrentPageChange} />
+        )}
       </Container>
     </ThemeProvider>
   );
