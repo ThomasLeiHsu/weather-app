@@ -70,7 +70,6 @@ const weatherCode2Type = (weatherCode) => {
       return weatherCodes.includes(Number(weatherCode));
     }) || [];
 
-  console.log(123);
   return weatherType;
 };
 function WeatherIcon({ weatherCode, moment }) {
