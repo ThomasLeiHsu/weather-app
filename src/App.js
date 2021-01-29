@@ -109,23 +109,23 @@ function App() {
     comfortability,
     isLoding,
   } = weatherElement;
+  const fetchData = async () => {
+    setWeatherElement((prevState) => ({
+      ...prevState,
+      isLoding: true,
+    }));
+    const [currentWeather, weatherForcast] = await Promise.all([
+      fetchWeatherData(),
+      fetchWeatherForcast(),
+    ]);
+    setWeatherElement({
+      ...currentWeather,
+      ...weatherForcast,
+      isLoding: false,
+    });
+  };
   //useEffect
   useEffect(() => {
-    const fetchData = async () => {
-      setWeatherElement((prevState) => ({
-        ...prevState,
-        isLoding: true,
-      }));
-      const [currentWeather, weatherForcast] = await Promise.all([
-        fetchWeatherData(),
-        fetchWeatherForcast(),
-      ]);
-      setWeatherElement({
-        ...currentWeather,
-        ...weatherForcast,
-        isLoding: false,
-      });
-    };
     fetchData();
   }, []);
 
@@ -152,13 +152,7 @@ function App() {
             <RainIcon />
             {rainPossibility}%
           </Rain>
-          <Refresh
-            onClick={() => {
-              fetchWeatherData();
-              fetchWeatherForcast();
-            }}
-            isLoding={isLoding}
-          >
+          <Refresh onClick={fetchData} isLoding={isLoding}>
             最後觀測時間 ：
             {new Intl.DateTimeFormat("zh-Tw", {
               hour: "numeric",
