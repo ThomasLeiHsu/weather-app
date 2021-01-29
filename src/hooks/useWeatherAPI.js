@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 //funciotn s
-const fetchWeatherData = ({ loactionName, key }) => {
+const fetchWeatherData = ({ locationName, key }) => {
   return fetch(
-    `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${key}&locationName=${loactionName}`
+    `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${key}&locationName=${locationName}`
   )
     .then((response) => response.json())
     .then((data) => {
@@ -52,7 +52,7 @@ const fetchWeatherForcast = ({ cityName, key }) => {
       };
     });
 };
-const useWeatherAPI = ({ loactionName, cityName, key }) => {
+const useWeatherAPI = ({ locationName, cityName, key }) => {
   const [weatherElement, setWeatherElement] = useState({
     locationName: "",
     description: "",
@@ -71,7 +71,7 @@ const useWeatherAPI = ({ loactionName, cityName, key }) => {
       isLoding: true,
     }));
     const [currentWeather, weatherForcast] = await Promise.all([
-      fetchWeatherData({ loactionName, key }),
+      fetchWeatherData({ locationName, key }),
       fetchWeatherForcast({ cityName, key }),
     ]);
     setWeatherElement({
@@ -79,7 +79,7 @@ const useWeatherAPI = ({ loactionName, cityName, key }) => {
       ...weatherForcast,
       isLoding: false,
     });
-  }, [loactionName, cityName, key]);
+  }, [locationName, cityName, key]);
   //useEffect 取得API資料
   useEffect(() => {
     fetchData();

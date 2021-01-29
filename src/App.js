@@ -36,7 +36,7 @@ function App() {
   //使用客製化的hook useWeatherAPI
   const [weatherElement, fetchData] = useWeatherAPI({
     key: AUTHORIZATTION_KEY,
-    loactionName: LOCATION_NAME,
+    locationName: LOCATION_NAME,
     cityName: LOCATION_NAME_FORCAST,
   });
   //取得當前位置時間是早上或晚上？
