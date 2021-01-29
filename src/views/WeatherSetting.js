@@ -12,8 +12,9 @@ function WeatherSetting({
     setLocationName(e.target.value);
   };
   const handleSave = () => {
-    console.log(locationName);
     handleCurrentCityChange(locationName);
+    localStorage.removeItem("花蓮縣");
+    localStorage.setItem("cityName", locationName);
     handleCurrentPageChange("WeatherCard");
   };
   return (

@@ -28,10 +28,10 @@ const theme = {
     textColor: "#cccccc",
   },
 };
-
 function App() {
   const [currentTheme, setCurrentTheme] = useState("light");
-  const [currentCity, setCurrentCity] = useState("臺北市");
+  const storageCityName = localStorage.getItem("cityName") || "臺北市";
+  const [currentCity, setCurrentCity] = useState(storageCityName);
   const currentLocation = useMemo(() => findLocation(currentCity), [
     currentCity,
   ]);
