@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "@emotion/styled";
-import { ReactComponent as DayCloudyIcon } from "./images/day-cloudy.svg";
-import { ReactComponent as RainIcon } from "./images/rain.svg";
-import { ReactComponent as AirFlowIcon } from "./images/airFlow.svg";
-import { ReactComponent as RefreshIcon } from "./images/refresh.svg";
+import WeatherCard from "./views/WeatherCard";
+import WeatherSetting from "./views/WeatherSetting";
 import { ThemeProvider } from "@emotion/react";
+import { getMoment, findLocation } from "./utils/helper";
+import useWeatherAPI from "./hooks/useWeatherAPI";
 
+//授權碼
+const AUTHORIZATTION_KEY = "CWB-1FE79B72-C9C2-4FDD-BD31-F7C60F0066A2";
 //深淺色主題css
 const theme = {
   light: {
@@ -28,32 +30,53 @@ const theme = {
 };
 function App() {
   const [currentTheme, setCurrentTheme] = useState("light");
-
+  const storageCityName = localStorage.getItem("cityName") || "臺北市";
+  const [currentCity, setCurrentCity] = useState(storageCityName);
+  const currentLocation = useMemo(() => findLocation(currentCity), [
+    currentCity,
+  ]);
+  const { cityName, locationName, sunriseCityName } = currentLocation;
+  //取得當前位置時間是早上或晚上？
+  const moment = useMemo(() => getMoment(sunriseCityName), [sunriseCityName]);
+  //使用客製化的hook useWeatherAPI
+  const [weatherElement, fetchData] = useWeatherAPI({
+    key: AUTHORIZATTION_KEY,
+    locationName,
+    cityName,
+  });
+  //useEffect 判斷當地時間更改主題背景色
+  useEffect(() => {
+    //根據moment決定主題色
+    setCurrentTheme(moment === "day" ? "light" : "dark");
+  }, [moment]);
+  //判斷出現哪個頁面
+  const [currentPage, setCurrentPage] = useState("WeatherCard");
+  //切換頁面
+  const handleCurrentPageChange = (currentPage) => {
+    setCurrentPage(currentPage);
+  };
+  const handleCurrentCityChange = (currentCity) => {
+    setCurrentCity(currentCity);
+  };
   return (
     <ThemeProvider theme={theme[currentTheme]}>
       <Container>
-        <WeatherCard>
-          <Location>台北市</Location>
-          <Description>多雲時晴</Description>
-          <CurrentWeather>
-            <Tempreature>
-              23<Celsius>°C</Celsius>
-            </Tempreature>
-            <DayCloudy />
-          </CurrentWeather>
-          <AirFlow>
-            <AirFlowIcon />
-            23 m/h
-          </AirFlow>
-          <Rain>
-            <RainIcon />
-            48%
-          </Rain>
-          <Refresh>
-            最後觀測時間:上午12:03
-            <RefreshIcon />
-          </Refresh>
-        </WeatherCard>
+        {currentPage === "WeatherCard" && (
+          <WeatherCard
+            cityName={cityName}
+            moment={moment}
+            fetchData={fetchData}
+            weatherElement={weatherElement}
+            handleCurrentPageChange={handleCurrentPageChange}
+          ></WeatherCard>
+        )}
+        {currentPage === "WeatherSetting" && (
+          <WeatherSetting
+            cityName={cityName}
+            handleCurrentPageChange={handleCurrentPageChange}
+            handleCurrentCityChange={handleCurrentCityChange}
+          />
+        )}
       </Container>
     </ThemeProvider>
   );
@@ -66,90 +89,6 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-`;
-const WeatherCard = styled.div`
-  position: relative;
-  min-width: 360px;
-  box-shadow: 0 1px 3px #999999;
-  background-color: ${({ theme }) => theme.foregroundColor};
-  box-sizing: border-box;
-  padding: 30px 15px;
-`;
-//location
-const Location = styled.div`
-  font-size: 28px;
-  color: ${({ theme }) => theme.titleColor};
-  margin-bottom: 20px;
-`;
-//description
-const Description = styled.div`
-  font-size: 16px;
-  color: ${({ theme }) => theme.textColor};
-  margin-bottom: 30px;
-`;
-//currentWeather
-const CurrentWeather = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-`;
-//temperature
-const Tempreature = styled.div`
-  color: ${({ theme }) => theme.temperatureColor};
-  font-size: 96px;
-  font-weight: 300;
-  display: flex;
-`;
-const Celsius = styled.div`
-  font-weight: normal;
-  font-size: 42px;
-`;
-const AirFlow = styled.div`
-  display: flex;
-  align-items: center;
-  font-size: 16x;
-  font-weight: 300;
-  color: ${({ theme }) => theme.textColor};
-  margin-bottom: 20px;
-  svg {
-    width: 25px;
-    height: auto;
-    margin-right: 30px;
-  }
-`;
-
-const Rain = styled.div`
-  display: flex;
-  align-items: center;
-  font-size: 16x;
-  font-weight: 300;
-  color: ${({ theme }) => theme.textColor};
-  svg {
-    width: 25px;
-    height: auto;
-    margin-right: 30px;
-  }
-`;
-
-const Refresh = styled.div`
-  position: absolute;
-  right: 15px;
-  bottom: 15px;
-  font-size: 12px;
-  display: inline-flex;
-  align-items: flex-end;
-  color: ${({ theme }) => theme.textColor};
-  svg {
-    width: 15px;
-    height: 15px;
-    margin-left: 30px;
-    cursor: pointer;
-  }
-`;
-//修改conponent的css
-const DayCloudy = styled(DayCloudyIcon)`
-  flex-basis: 30%;
 `;
 
 export default App;

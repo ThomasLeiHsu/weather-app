@@ -4,8 +4,12 @@
 /node_modules
 /.pnp
 .pnp.js
+<<<<<<< HEAD
 .eslintcache
 
+=======
+/.eslintcache
+>>>>>>> developer
 # testing
 /coverage
 
