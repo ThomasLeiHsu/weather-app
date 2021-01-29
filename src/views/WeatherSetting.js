@@ -2,13 +2,19 @@ import React, { useState } from "react";
 import styled from "@emotion/styled";
 import { availableLocations } from "../utils/helper";
 
-function WeatherSetting({ handleCurrentPageChange }) {
-  const [locationName, setLocationName] = useState("臺北市");
+function WeatherSetting({
+  handleCurrentPageChange,
+  handleCurrentCityChange,
+  cityName,
+}) {
+  const [locationName, setLocationName] = useState(cityName);
   const handleChange = (e) => {
     setLocationName(e.target.value);
   };
   const handleSave = () => {
     console.log(locationName);
+    handleCurrentCityChange(locationName);
+    handleCurrentPageChange("WeatherCard");
   };
   return (
     <WeatherSettingWrapper>

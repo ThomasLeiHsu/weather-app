@@ -8,13 +8,13 @@ import { ReactComponent as LoadingIcon } from "../images/loading.svg";
 import { ReactComponent as CogIcon } from "../images/cog.svg";
 import WeatherIcon from "../conponents/WeatherIcon";
 function WeatherCard({
+  cityName,
   fetchData,
   moment,
   weatherElement,
   handleCurrentPageChange,
 }) {
   const {
-    locationName,
     description,
     windspeed,
     tempreature,
@@ -31,7 +31,7 @@ function WeatherCard({
           handleCurrentPageChange("WeatherSetting");
         }}
       />
-      <Location>{locationName}</Location>
+      <Location>{cityName}</Location>
       <Description>
         {description} {comfortability}
       </Description>

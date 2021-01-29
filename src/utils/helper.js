@@ -158,6 +158,6 @@ export const availableLocations = [
 //找出cityName的方法
 export const findLocation = (cityName) => {
   return availableLocations.find((location) => {
-    return (location.cityName = cityName);
+    return location.cityName === cityName;
   });
 };

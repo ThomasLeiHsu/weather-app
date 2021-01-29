@@ -3,13 +3,11 @@ import styled from "@emotion/styled";
 import WeatherCard from "./views/WeatherCard";
 import WeatherSetting from "./views/WeatherSetting";
 import { ThemeProvider } from "@emotion/react";
-import { getMoment } from "./utils/helper";
+import { getMoment, findLocation } from "./utils/helper";
 import useWeatherAPI from "./hooks/useWeatherAPI";
 
 //授權碼
 const AUTHORIZATTION_KEY = "CWB-1FE79B72-C9C2-4FDD-BD31-F7C60F0066A2";
-const LOCATION_NAME = "臺北";
-const LOCATION_NAME_FORCAST = "臺北市";
 //深淺色主題css
 const theme = {
   light: {
@@ -33,14 +31,19 @@ const theme = {
 
 function App() {
   const [currentTheme, setCurrentTheme] = useState("light");
+  const [currentCity, setCurrentCity] = useState("臺北市");
+  const currentLocation = useMemo(() => findLocation(currentCity), [
+    currentCity,
+  ]);
+  const { cityName, locationName, sunriseCityName } = currentLocation;
+  //取得當前位置時間是早上或晚上？
+  const moment = useMemo(() => getMoment(sunriseCityName), [sunriseCityName]);
   //使用客製化的hook useWeatherAPI
   const [weatherElement, fetchData] = useWeatherAPI({
     key: AUTHORIZATTION_KEY,
-    locationName: LOCATION_NAME,
-    cityName: LOCATION_NAME_FORCAST,
+    locationName,
+    cityName,
   });
-  //取得當前位置時間是早上或晚上？
-  const moment = useMemo(() => getMoment(LOCATION_NAME_FORCAST), []);
   //useEffect 判斷當地時間更改主題背景色
   useEffect(() => {
     //根據moment決定主題色
@@ -52,11 +55,15 @@ function App() {
   const handleCurrentPageChange = (currentPage) => {
     setCurrentPage(currentPage);
   };
+  const handleCurrentCityChange = (currentCity) => {
+    setCurrentCity(currentCity);
+  };
   return (
     <ThemeProvider theme={theme[currentTheme]}>
       <Container>
         {currentPage === "WeatherCard" && (
           <WeatherCard
+            cityName={cityName}
             moment={moment}
             fetchData={fetchData}
             weatherElement={weatherElement}
@@ -64,7 +71,11 @@ function App() {
           ></WeatherCard>
         )}
         {currentPage === "WeatherSetting" && (
-          <WeatherSetting handleCurrentPageChange={handleCurrentPageChange} />
+          <WeatherSetting
+            cityName={cityName}
+            handleCurrentPageChange={handleCurrentPageChange}
+            handleCurrentCityChange={handleCurrentCityChange}
+          />
         )}
       </Container>
     </ThemeProvider>
