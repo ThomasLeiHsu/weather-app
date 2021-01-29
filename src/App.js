@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "@emotion/styled";
 import { ReactComponent as DayCloudyIcon } from "./images/day-cloudy.svg";
 import { ReactComponent as RainIcon } from "./images/rain.svg";
@@ -7,6 +7,7 @@ import { ReactComponent as RefreshIcon } from "./images/refresh.svg";
 import { ReactComponent as LoadingIcon } from "./images/loading.svg";
 import { ThemeProvider } from "@emotion/react";
 import WeatherIcon from "./conponents/WeatherIcon";
+import { getMoment } from "./utils/helper";
 import dayjs from "dayjs";
 
 //授權碼
@@ -99,6 +100,8 @@ function App() {
     comfortability: "",
     isLoding: true,
   });
+  //取得當前位置時間是早上或晚上？
+  const moment = useMemo(() => getMoment(LOCATION_NAME_FORCAST), []);
   //解構賦值
   const {
     locationName,
@@ -126,11 +129,15 @@ function App() {
       isLoding: false,
     });
   };
-  //useEffect
+  //useEffect 取得API資料
   useEffect(() => {
     fetchData();
   }, []);
-
+  //useEffect 判斷當地時間更改主題背景色
+  useEffect(() => {
+    //根據moment決定主題色
+    setCurrentTheme(moment === "day" ? "light" : "dark");
+  }, [moment]);
   return (
     <ThemeProvider theme={theme[currentTheme]}>
       <Container>
@@ -144,7 +151,7 @@ function App() {
               {Math.round(tempreature)}
               <Celsius>°C</Celsius>
             </Tempreature>
-            <WeatherIcon weatherCode={weatherCode} moment="night" />
+            <WeatherIcon weatherCode={weatherCode} moment={moment} />
           </CurrentWeather>
           <AirFlow>
             <AirFlowIcon />
