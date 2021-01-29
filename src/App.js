@@ -108,6 +108,7 @@ function App() {
     rainPossibility,
     observationTime,
     comfortability,
+    weatherCode,
     isLoding,
   } = weatherElement;
   const fetchData = async () => {
@@ -143,7 +144,7 @@ function App() {
               {Math.round(tempreature)}
               <Celsius>°C</Celsius>
             </Tempreature>
-            <WeatherIcon />
+            <WeatherIcon weatherCode={weatherCode} moment="night" />
           </CurrentWeather>
           <AirFlow>
             <AirFlowIcon />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "@emotion/styled";
 import { ReactComponent as DayClear } from "./../images/day-clear.svg";
 import { ReactComponent as DayCloudy } from "./../images/day-cloudy.svg";
@@ -63,23 +63,24 @@ const weatherIcons = {
     isSnowing: <NightSnowing />,
   },
 };
-
+//抓取weatherCode轉變成type
 const weatherCode2Type = (weatherCode) => {
   const [weatherType] =
     Object.entries(weatherTypes).find(([weatherType, weatherCodes]) => {
       return weatherCodes.includes(Number(weatherCode));
     }) || [];
 
+  console.log(123);
   return weatherType;
 };
-const weatherCode = 1;
-console.log(weatherCode2Type(weatherCode));
-function WeatherIcon() {
+function WeatherIcon({ weatherCode, moment }) {
+  const weatherType = useMemo(() => weatherCode2Type(weatherCode), [
+    weatherCode,
+  ]);
+  const weatherIcon = weatherIcons[moment][weatherType];
   return (
     <div>
-      <IconContainer>
-        <DayCloudy />
-      </IconContainer>
+      <IconContainer>{weatherIcon}</IconContainer>
     </div>
   );
 }
